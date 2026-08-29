@@ -8,7 +8,7 @@ The bespoke plugin for server-side tweaks on IMMC: Survival.
 |-------------------------|----------------------------------------------------------------------------------------------------------------------------|--------------------|
 | No Crop Trampling       | https://www.spigotmc.org/resources/simplenocroptrample.73609/                                                              | Done ✅             |
 | No Anvil Limit          | None                                                                                                                       | Done ✅             |
-| Coloured Item Names     | https://www.spigotmc.org/resources/anvilcolors.109155/                                                                     | To Do ⏰            |
+| Coloured Item Names     | https://www.spigotmc.org/resources/anvilcolors.109155/                                                                     | Done ✅             |
 | Coloured Sign text      | https://www.spigotmc.org/resources/colored-signs.31676/                                                                    | To Do ⏰            |
 | Creeper Confetti        | https://www.spigotmc.org/resources/creeperconfetti.85204/                                                                  | To Do ⏰            |
 | Shulker Backpacks       | https://www.spigotmc.org/resources/eshulkerbox-let-players-interact-with-shulker-boxes-in-a-better-way-and-comfort.106156/ | To Do ⏰            |
