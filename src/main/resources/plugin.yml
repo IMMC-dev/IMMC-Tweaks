@@ -3,5 +3,10 @@ version: 1.0.0
 api-version: '26.2'
 main: net.immortalmc.tweaks.immcTweaks
 description: A modular collection of gameplay tweaks built bespoke for Immortal MC.
-authors: [Immortal MC, Lia Howie]
+authors: [Immortal MC, Lia H]
 website: https://www.immortalmc.net/
+commands:
+  itemnamecolour:
+    description: Shows the colour codes of the item you're holding.
+    usage: /itemnamecolour
+    aliases: [inc]

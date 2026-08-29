@@ -5,6 +5,9 @@ import net.immortalmc.tweaks.immcTweaks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,7 +19,7 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class ItemNameColour implements Listener {
+public class ItemNameColour implements Listener, CommandExecutor {
 
     private final immcTweaks plugin; 
 
@@ -26,6 +29,36 @@ public class ItemNameColour implements Listener {
 
     // Handles & codes like &c, &l etc.
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacyAmpersand();
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(Component.text("This command can only be run by a player."));
+            return true;
+        }
+
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType().isAir() || !item.hasItemMeta()) {
+            player.sendMessage(Component.text("You must be holding an item with a custom name."));
+            return true;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasDisplayName()) {
+            player.sendMessage(Component.text("The item you're holding has no custom name."));
+            return true;
+        }
+
+        Component displayName = meta.displayName();
+        if (displayName == null) {
+            player.sendMessage(Component.text("The item you're holding has no custom name."));
+            return true;
+        }
+
+        player.sendMessage(Component.text("Item Colour Codes: ")
+            .append(Component.text(componentToColorCodes(displayName))));
+        return true;
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPrepareAnvil(PrepareAnvilEvent event) {

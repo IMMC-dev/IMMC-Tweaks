@@ -14,7 +14,9 @@ public class immcTweaks extends JavaPlugin {
         getLogger().info("NoAnvilLimit Loaded");
         getServer().getPluginManager().registerEvents(new NoCropTrample(), this);
         getLogger().info("NoCropTrample Loaded");
-        getServer().getPluginManager().registerEvents(new ItemNameColour(this), this);
+        ItemNameColour itemNameColour = new ItemNameColour(this);
+        getServer().getPluginManager().registerEvents(itemNameColour, this);
+        getServer().getPluginCommand("itemnamecolour").setExecutor(itemNameColour);
         getLogger().info("ItemNameColour Loaded"); 
         getLogger().info("IMMC Tweaks enabled!");
     }
