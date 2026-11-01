@@ -10,6 +10,6 @@ The bespoke plugin for server-side tweaks on IMMC: Survival.
 | No Anvil Limit          | None                                                                                                                       | Done ✅            |
 | Coloured Item Names     | https://www.spigotmc.org/resources/anvilcolors.109155/                                                                     | Done ✅            |
 | Coloured Sign Text      | https://www.spigotmc.org/resources/colored-signs.31676/                                                                    | Done ✅            |
-| Creeper Confetti        | https://www.spigotmc.org/resources/creeperconfetti.85204/                                                                  | To Do ⏰           |
+| Creeper Confetti        | https://www.spigotmc.org/resources/creeperconfetti.85204/                                                                  | Done ✅            |
 | Shulker Backpacks       | https://www.spigotmc.org/resources/eshulkerbox-let-players-interact-with-shulker-boxes-in-a-better-way-and-comfort.106156/ | To Do ⏰           |
-| Bone Meal Small Flowers | https://www.spigotmc.org/resources/flowermeal.103720/                                                                      | To Do ⏰           |
+| Bone Meal Small Flowers | https://www.spigotmc.org/resources/flowermeal.103720/                                                                      | Done ✅            |

@@ -5,6 +5,21 @@ no-anvil-limit:
   enabled: true
 
 
+better-bonemeal:
+  # Allows bonemealing plants not normall bone-mealable
+  enabled: true
+
+  flowers:
+    # Allow bonemealing of small flowers like poppies or wither roses.
+    enabled: true
+      # Small flowers that can NOT be duplicated with bone meal, by their normal Minecraft name.
+      # Leave as [] to allow every small flower. Example:
+      #   excluded:
+      #     - wither_rose
+      #     - torchflower
+    excluded: []
+
+
 creeper-confetti:
   # Prevent creepers from destroying blocks, while releasing fireworks instead
   enabled: true

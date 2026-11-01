@@ -7,6 +7,7 @@ import net.immortalmc.tweaks.modules.SignTextColour;
 import net.immortalmc.tweaks.modules.ItemNameColour;
 import net.immortalmc.tweaks.modules.NoAnvilLimit;
 import net.immortalmc.tweaks.modules.CreeperConfetti;
+import net.immortalmc.tweaks.modules.BetterBonemeal;
 
 public class immcTweaks extends JavaPlugin {
 
@@ -49,6 +50,12 @@ public class immcTweaks extends JavaPlugin {
             getLogger().info("CreeperConfetti Enabled");
         } else {
             getLogger().info("CreeperConfetti Disabled");
+        }
+        if (getConfig().getBoolean("better-bonemeal.enabled", true)) {
+            getServer().getPluginManager().registerEvents(new BetterBonemeal(this), this);
+            getLogger().info("BetterBonemeal Enabled");
+        } else {
+            getLogger().info("BetterBonemeal Disabled");
         }
 
         getLogger().info("IMMC Tweaks enabled!");

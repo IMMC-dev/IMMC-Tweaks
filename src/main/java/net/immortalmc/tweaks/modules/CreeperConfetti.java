@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class CreeperConfetti implements Listener {
 
-    private static final String PREFIX = "[CreeperConfetti] ";
+    private static final String PREFIX = "CreeperConfetti: ";
 
     private final immcTweaks plugin;
     private final NamespacedKey confettiKey;   // <-- new field
