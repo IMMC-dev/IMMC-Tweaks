@@ -1,0 +1,57 @@
+# IMMC Tweaks configuration
+
+no-anvil-limit:
+  # Remove the too expensive anvil limit by capping the max level cost at 39 levels
+  enabled: true
+
+
+creeper-confetti:
+  # Prevent creepers from destroying blocks, while releasing fireworks instead
+  enabled: true
+
+  # Percent chance (0-100) that an exploding creeper becomes confetti
+  chance: 100
+
+  # Colours the bursts are made of, as hex codes.
+  # Hex codes MUST be in quotes, otherwise YAML treats the # as a comment.
+  colors:
+    - "#FF0000"   # red
+    - "#FF9100"   # orange
+    - "#FFE600"   # yellow
+    - "#4DFF00"   # green
+    - "#08FF94"   # mint
+    - "#00EEFF"   # cyan
+    - "#0044FF"   # blue
+    - "#8000FF"   # purple
+    - "#CC00FF"   # magenta
+
+  # Colours the bursts fade into
+  fade-colors:
+    - "#000000"   # black
+
+  # Each entry is one burst that goes off when a creeper explodes
+  # Valid Types: BALL, BALL_LARGE, STAR, BURST or CREEPER
+  # Flicker: whether to use the sparkle effect
+  # Trail: whether to use the firework trail effect
+  effects:
+    - type: BALL
+      flicker: true
+      trail: false
+    - type: BALL_LARGE
+      flicker: true
+      trail: false
+
+
+no-crop-trample:
+  # Prevent players and mobs from destroying farmland by jumping on it
+  enabled: true
+
+
+item-name-colour:
+  # Allow use of '&' colour codes and '#' hex codes to add custom colours to item names
+  enabled: true
+
+
+sign-text-colour:
+  # Allow use of '&' colour codes and '#' hex codes to add custom colours to sign text
+  enabled: true
