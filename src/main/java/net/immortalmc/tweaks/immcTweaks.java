@@ -16,30 +16,41 @@ public class immcTweaks extends JavaPlugin {
         
         if (getConfig().getBoolean("no-crop-trample.enabled", true)) {
             getServer().getPluginManager().registerEvents(new NoCropTrample(), this);
-            getLogger().info("NoCropTrample Loaded");
+            getLogger().info("NoCropTrample Enabled");
+        } else {
+            getLogger().info("NoCropTrample Disabled");
         }
 
         if (getConfig().getBoolean("sign-text-colour.enabled", true)) {
             getServer().getPluginManager().registerEvents(new SignTextColour(), this);
-            getLogger().info("SignTextColour Loaded");
+            getLogger().info("SignTextColour Enabled");
+        } else {
+            getLogger().info("SignTextColour Disabled");
         }
 
         if (getConfig().getBoolean("item-name-colour.enabled", true)) {
             ItemNameColour itemNameColour = new ItemNameColour(this);
             getServer().getPluginManager().registerEvents(itemNameColour, this);
             getServer().getPluginCommand("itemnamecolour").setExecutor(itemNameColour);
-            getLogger().info("ItemNameColour Loaded"); 
+            getLogger().info("ItemNameColour Enabled"); 
+        } else {
+            getLogger().info("ItemNameColour Disabled");
         }
         
         if (getConfig().getBoolean("no-anvil-limit.enabled", true)) {
             getServer().getPluginManager().registerEvents(new NoAnvilLimit(), this);
-            getLogger().info("NoAnvilLimit Loaded");
+            getLogger().info("NoAnvilLimit Enabled");
+        } else {
+            getLogger().info("NoAnvilLimit Disabled");
         }
 
         if (getConfig().getBoolean("creeper-confetti.enabled", true)) {
             getServer().getPluginManager().registerEvents(new CreeperConfetti(this), this);
-            getLogger().info("CreeperConfetti Loaded");
+            getLogger().info("CreeperConfetti Enabled");
+        } else {
+            getLogger().info("CreeperConfetti Disabled");
         }
+
         getLogger().info("IMMC Tweaks enabled!");
     }
 

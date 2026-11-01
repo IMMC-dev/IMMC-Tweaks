@@ -2,17 +2,20 @@ package net.immortalmc.tweaks.modules;
 
 import net.immortalmc.tweaks.immcTweaks;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.entity.Firework;
 import org.bukkit.FireworkEffect;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +27,14 @@ public class CreeperConfetti implements Listener {
     private static final String PREFIX = "[CreeperConfetti] ";
 
     private final immcTweaks plugin;
+    private final NamespacedKey confettiKey;   // <-- new field
 
     private int chance = 0;
     private List<FireworkEffect> effects = new ArrayList<>();
 
     public CreeperConfetti(immcTweaks plugin) {
         this.plugin = plugin;
+        this.confettiKey = new NamespacedKey(plugin, "confetti_firework");   // <-- new line
         loadConfig();
     }
 
@@ -100,25 +105,36 @@ public class CreeperConfetti implements Listener {
         Object value = map.get(key);
         return value instanceof Boolean b && b;
     }
-    
+
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-        public void onCreeperExplode(EntityExplodeEvent event) {
-            if (event.getEntityType() != EntityType.CREEPER) return;
-            if (effects.isEmpty()) return;
+    public void onCreeperExplode(EntityExplodeEvent event) {
+        if (event.getEntityType() != EntityType.CREEPER) return;
+        if (effects.isEmpty()) return;
 
-            // Roll the chance. If it fails, the creeper explodes normally.
-            if (ThreadLocalRandom.current().nextInt(100) >= chance) return;
+        // Roll the chance. If it fails, the creeper explodes normally.
+        if (ThreadLocalRandom.current().nextInt(100) >= chance) return;
 
-            // Remove every block from the explosion so nothing is destroyed.
-            // Damage and knockback to entities are not part of this list, so they still happen.
-            event.blockList().clear();
+        // Remove every block from the explosion so nothing is destroyed.
+        // Damage and knockback to entities are not part of this list, so they still happen.
+        event.blockList().clear();
 
-            Location location = event.getLocation();
-            location.getWorld().spawn(location, Firework.class, firework -> {
-                FireworkMeta meta = firework.getFireworkMeta();
-                meta.addEffects(effects);
-                firework.setFireworkMeta(meta);
-            }).detonate();
+        Location location = event.getLocation();
+        location.getWorld().spawn(location, Firework.class, firework -> {
+            FireworkMeta meta = firework.getFireworkMeta();
+            meta.addEffects(effects);
+            firework.setFireworkMeta(meta);
+
+            // Mark this firework as ours so we can recognise it later
+            firework.getPersistentDataContainer().set(confettiKey, PersistentDataType.BYTE, (byte) 1);
+        }).detonate();
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onConfettiDamage(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Firework firework
+            && firework.getPersistentDataContainer().has(confettiKey)) {
+            event.setCancelled(true);
         }
+    }
 }
