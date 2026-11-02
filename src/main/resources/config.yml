@@ -29,7 +29,7 @@ creeper-confetti:
 
   # Colours the bursts are made of, as hex codes.
   # Hex codes MUST be in quotes, otherwise YAML treats the # as a comment.
-  colors:
+  colours:
     - "#FF0000"   # red
     - "#FF9100"   # orange
     - "#FFE600"   # yellow
@@ -41,7 +41,7 @@ creeper-confetti:
     - "#CC00FF"   # magenta
 
   # Colours the bursts fade into
-  fade-colors:
+  fade-colours:
     - "#000000"   # black
 
   # Each entry is one burst that goes off when a creeper explodes
