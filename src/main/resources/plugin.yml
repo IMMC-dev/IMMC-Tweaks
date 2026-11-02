@@ -1,6 +1,6 @@
 name: IMMC-Tweaks
-version: 0.1.0
-api-version: '26.2'
+version: 0.1.0-beta
+api-version: '26.3'
 main: net.immortalmc.tweaks.immcTweaks
 description: A modular collection of gameplay tweaks built bespoke for Immortal MC.
 authors: [Immortal MC, Lia H]
