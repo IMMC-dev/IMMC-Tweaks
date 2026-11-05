@@ -70,3 +70,8 @@ item-name-colour:
 sign-text-colour:
   # Allow use of '&' colour codes and '#' hex codes to add custom colours to sign text
   enabled: true
+
+
+shulker-backpack:
+  # Allow players to open shulker boxes in their inventory without placing them
+  enabled: true

@@ -6,6 +6,7 @@ import net.immortalmc.tweaks.modules.CreeperConfetti;
 import net.immortalmc.tweaks.modules.NoCropTrample;
 import net.immortalmc.tweaks.modules.ItemNameColour;
 import net.immortalmc.tweaks.modules.SignTextColour;
+import net.immortalmc.tweaks.modules.ShulkerBackpack;
 import net.immortalmc.tweaks.utils.SendChatMsg;
 
 import org.bukkit.command.CommandExecutor;
@@ -43,6 +44,7 @@ public class immcTweaks extends JavaPlugin {
         registerModule("creeper-confetti", "CreeperConfetti", () -> new CreeperConfetti(this));
         registerModule("better-bonemeal", "BetterBonemeal", () -> new BetterBonemeal(this));
         registerModule("item-name-colour", "ItemNameColour", () -> new ItemNameColour(this), "itemnamecolour");
+        registerModule("shulker-backpack", "ShulkerBackpack", () -> new ShulkerBackpack(this));
 
         logActiveCommands();
         getLogger().info("IMMC Tweaks enabled!");
