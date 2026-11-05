@@ -16,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 /**
  * Shulker Backpack module - opens shulker box inventory when right-clicked in inventory.
@@ -58,20 +57,19 @@ public class ShulkerBackpack implements Listener {
                     
                     // Get the display name from the shulker box item
                     String shulkerName = "Shulker Box";
+                    Component title = null;
                     if (meta.hasDisplayName()) {
-                        Component displayName = meta.displayName();
-                        // Extract plain text from Component (handles formatting codes, etc.)
-                        shulkerName = PlainTextComponentSerializer.plainText().serialize(displayName);
+                        title = meta.displayName();
                     }
-                    
+
                     // Create a preview inventory using the new API (Component title)
-                    Inventory preview = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, Component.text(shulkerName));
+                    Inventory preview = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, title != null ? title : Component.text(shulkerName));
                     preview.setContents(shulkerInventory.getContents());
-                    
+
                     // Open the preview inventory for the player
                     player.openInventory(preview);
-                    
-                    plugin.getLogger().info("[ShulkerBackpack] Opened shulker box preview for " + player.getName());
+
+                    plugin.getLogger().info("[ShulkerBackpack] Opened shulker box preview for " + player.getName() + " (title: " + (title != null ? title.toString() : shulkerName) + ")");
                 }
             }
         } catch (Exception e) {
