@@ -15,6 +15,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import net.kyori.adventure.text.Component;
 
 /**
  * Shulker Backpack module - opens shulker box inventory when right-clicked in inventory.
@@ -54,9 +55,14 @@ public class ShulkerBackpack implements Listener {
                     // Cancel the event to prevent picking up the shulker box
                     event.setCancelled(true);
                     
-                    // Create a preview inventory
-                    Inventory preview = Bukkit.createInventory(null, InventoryType.SHULKER_BOX,
-                        clickedItem.getItemMeta().getDisplayName() + " Preview");
+                    // Get the display name from the shulker box item
+                    String shulkerName = "";
+                    if (meta.hasDisplayName()) {
+                        shulkerName = meta.displayName().toString();
+                    }
+                    
+                    // Create a preview inventory using the new API (Component title)
+                    Inventory preview = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, Component.text(shulkerName));
                     preview.setContents(shulkerInventory.getContents());
                     
                     // Open the preview inventory for the player
@@ -81,12 +87,12 @@ public class ShulkerBackpack implements Listener {
         // The shulker box's inventory should match the preview inventory
         // If so, update the actual shulker box with the modified contents
         try {
-            // Get the player's hand to find the shulker box
-            ItemStack handItem = player.getItemInHand();
-            if (handItem == null || handItem.getType() != SHULKER_BOX) return;
+            // Get the player's main hand item using the new API
+            ItemStack mainHand = player.getInventory().getItemInMainHand();
+            if (mainHand == null || mainHand.getType() != SHULKER_BOX) return;
             
-            ItemMeta handMeta = handItem.getItemMeta();
-            if (!(handMeta instanceof BlockStateMeta blockStateMeta)) return;
+            ItemMeta mainMeta = mainHand.getItemMeta();
+            if (!(mainMeta instanceof BlockStateMeta blockStateMeta)) return;
             
             Object blockState = blockStateMeta.getBlockState();
             if (!(blockState instanceof ShulkerBox shulkerBox)) return;
@@ -94,7 +100,7 @@ public class ShulkerBackpack implements Listener {
             // Update the shulker box with the preview inventory's contents
             shulkerBox.getInventory().setContents(topInv.getContents());
             blockStateMeta.setBlockState(shulkerBox);
-            handItem.setItemMeta(handMeta);
+            player.getInventory().setItemInMainHand(mainHand);
             
             plugin.getLogger().info("[ShulkerBackpack] Updated shulker box contents for " + player.getName());
         } catch (Exception e) {
