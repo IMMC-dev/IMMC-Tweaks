@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 /**
  * Shulker Backpack module - opens shulker box inventory when right-clicked in inventory.
@@ -56,9 +57,11 @@ public class ShulkerBackpack implements Listener {
                     event.setCancelled(true);
                     
                     // Get the display name from the shulker box item
-                    String shulkerName = "";
+                    String shulkerName = "Shulker Box";
                     if (meta.hasDisplayName()) {
-                        shulkerName = meta.displayName().toString();
+                        Component displayName = meta.displayName();
+                        // Extract plain text from Component (handles formatting codes, etc.)
+                        shulkerName = PlainTextComponentSerializer.plainText().serialize(displayName);
                     }
                     
                     // Create a preview inventory using the new API (Component title)
