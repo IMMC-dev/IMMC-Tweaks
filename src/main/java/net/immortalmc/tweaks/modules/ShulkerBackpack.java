@@ -49,6 +49,9 @@ public class ShulkerBackpack implements Listener {
                 if (blockState instanceof ShulkerBox shulkerBox) {
                     Inventory shulkerInventory = shulkerBox.getInventory();
                     
+                    // Cancel the event to prevent picking up the shulker box
+                    event.setCancelled(true);
+                    
                     // Log the shulker box contents
                     plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() 
                         + " right-clicked a shulker box. Contents:");
@@ -57,8 +60,10 @@ public class ShulkerBackpack implements Listener {
                     for (int i = 0; i < contents.length; i++) {
                         ItemStack item = contents[i];
                         if (item != null) {
-                            String displayName = item.hasItemMeta() ? 
-                                item.getItemMeta().getDisplayName() : null;
+                            String displayName = null;
+                            if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+                                displayName = item.getItemMeta().displayName().toString();
+                            }
                             plugin.getLogger().info("  Slot " + i + ": " + 
                                 (displayName != null ? displayName : "unknown") + 
                                 " x" + item.getAmount());
