@@ -84,6 +84,19 @@ public class ShulkerBackpack implements Listener {
                     // Clear the cursor to prevent phantom items
                     event.setCursor(null);
 
+                    // Tag the shulker box to prevent it from being moved or dropped
+                    // Create a copy to avoid modifying the original item in inventory
+                    ItemStack taggedShulker = clickedItem.clone();
+                    ItemMeta taggedMeta = taggedShulker.getItemMeta();
+                    if (taggedMeta != null) {
+                        org.bukkit.persistence.PersistentDataContainer container = taggedMeta.getPersistentDataContainer();
+                        container.set(SHULKER_TAG_KEY, PersistentDataType.BYTE, (byte) 1);
+                        taggedShulker.setItemMeta(taggedMeta);
+                    };
+
+                    // Store the slot number where the shulker was tagged
+                    taggedSlots.put(player, event.getSlot());
+
                     // Get the display name from the shulker box item
                     String shulkerName = "Shulker Box";
                     Component title = null;
@@ -100,19 +113,6 @@ public class ShulkerBackpack implements Listener {
                     
                     // Store the preview inventory to access it later
                     previewInventories.put(player, preview);
-
-                    // Tag the shulker box to prevent it from being moved or dropped
-                    // Create a copy to avoid modifying the original item in inventory
-                    ItemStack taggedShulker = clickedItem.clone();
-                    ItemMeta taggedMeta = taggedShulker.getItemMeta();
-                    if (taggedMeta != null) {
-                        org.bukkit.persistence.PersistentDataContainer container = taggedMeta.getPersistentDataContainer();
-                        container.set(SHULKER_TAG_KEY, PersistentDataType.BYTE, (byte) 1);
-                        taggedShulker.setItemMeta(taggedMeta);
-                    }
-
-                    // Store the slot number where the shulker was tagged
-                    taggedSlots.put(player, event.getSlot());
 
                     // Debug output
                     StringBuilder contents = new StringBuilder();
