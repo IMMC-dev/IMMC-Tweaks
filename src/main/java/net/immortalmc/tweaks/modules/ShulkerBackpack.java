@@ -17,9 +17,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import net.kyori.adventure.text.Component;
+
+import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,17 +32,14 @@ import java.util.Map;
  */
 public class ShulkerBackpack implements Listener {
     private final immcTweaks plugin;
-    private boolean enabled;
     
     private static final Material SHULKER_BOX = Material.SHULKER_BOX;
     private final NamespacedKey SHULKER_TAG_KEY;
     private final Map<Player, Integer> taggedSlots = new HashMap<>(); // Track which slot was tagged
     private final Map<Player, org.bukkit.inventory.Inventory> previewInventories = new HashMap<>(); // Track preview inventories
-    private final Map<Player, Integer> taggedHand = new HashMap<>(); // Track which hand the outdoor shulker is in (-1 = main hand, -2 = off hand)
 
     public ShulkerBackpack(immcTweaks plugin) {
         this.plugin = plugin;
-        this.enabled = plugin.getConfig().getBoolean("shulker-backpack.enabled", true);
         this.SHULKER_TAG_KEY = new NamespacedKey(plugin, "shulker_backpack_tag");
     }
 
@@ -47,13 +47,21 @@ public class ShulkerBackpack implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        // Cancel clicks on the tagged slot (player inventory only)
-        Integer playerTaggedSlot = taggedSlots.get(player);
-        if (playerTaggedSlot != null
-                && event.getClickedInventory() == player.getInventory()
-                && playerTaggedSlot == event.getSlot()) {
-            event.setCancelled(true);
-            return;
+        // While a preview is open, protect the shulker it came from
+        Integer taggedSlot = taggedSlots.get(player);
+        if (taggedSlot != null) {
+            boolean clickedTagged = event.getClickedInventory() == player.getInventory()
+                    && event.getSlot() == taggedSlot;
+
+            // Number keys and F swap the tagged slot's item even when hovering another slot
+            boolean swappedWithTagged =
+                    (event.getClick() == ClickType.NUMBER_KEY && event.getHotbarButton() == taggedSlot)
+                    || (event.getClick() == ClickType.SWAP_OFFHAND && taggedSlot == 40);
+
+            if (clickedTagged || swappedWithTagged) {
+                event.setCancelled(true);
+                return;
+            }
         }
 
         // Only handle right-clicks
@@ -66,160 +74,93 @@ public class ShulkerBackpack implements Listener {
         // Only shulker boxes
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null || clickedItem.getType() != SHULKER_BOX) return;
+        if (!(clickedItem.getItemMeta() instanceof BlockStateMeta)) return;
 
-        ItemMeta meta = clickedItem.getItemMeta();
-        if (!(meta instanceof BlockStateMeta)) return;
-
-        // Cancel the pickup, then open the real preview one tick later
+        // Never pick the shulker up with the cursor
         event.setCancelled(true);
 
+        // One preview at a time
+        if (previewInventories.containsKey(player)) return;
+
         final int slot = event.getSlot();
-        taggedSlots.put(player, slot);
-        Bukkit.getScheduler().runTask(plugin, () ->
-                openShulkerBackpackPreview(player, clickedItem, slot, meta));
+        Bukkit.getScheduler().runTask(plugin, () -> openShulkerBackpackPreview(player, slot));
     }
     
     @EventHandler(priority = EventPriority.HIGHEST)
-public void onInventoryClose(InventoryCloseEvent event) {
-    if (!(event.getPlayer() instanceof Player player)) return;
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) return;
 
-    // Ignore closes that aren't our preview
-    Inventory preview = previewInventories.get(player);
-    if (preview == null || event.getInventory() != preview) return;
+        // Ignore closes that aren't our preview
+        Inventory preview = previewInventories.get(player);
+        if (preview == null || event.getInventory() != preview) return;
 
-    previewInventories.remove(player);
-    Integer slot = taggedSlots.remove(player);
+        previewInventories.remove(player);
+        Integer slot = taggedSlots.remove(player);
 
-    if (slot != null) {
-        ItemStack item = player.getInventory().getItem(slot);
-        if (item != null
-                && item.getType() == Material.SHULKER_BOX
-                && item.getItemMeta() instanceof BlockStateMeta bsm
-                && bsm.getBlockState() instanceof ShulkerBox box) {
+        if (slot != null) {
+            ItemStack item = player.getInventory().getItem(slot);
+            if (item != null
+                    && item.getType() == Material.SHULKER_BOX
+                    && item.getItemMeta() instanceof BlockStateMeta bsm
+                    && bsm.getBlockState() instanceof ShulkerBox box) {
 
-            // Save the preview contents back into the shulker
-            box.getInventory().setContents(preview.getContents());
-            bsm.setBlockState(box);
+                // Save the preview contents back into the shulker
+                box.getInventory().setContents(preview.getContents());
+                bsm.setBlockState(box);
 
-            // Remove the tag if the interact path added one
-            bsm.getPersistentDataContainer().remove(SHULKER_TAG_KEY);
+                // Remove the tag if the interact path added one
+                bsm.getPersistentDataContainer().remove(SHULKER_TAG_KEY);
 
-            item.setItemMeta(bsm);
+                item.setItemMeta(bsm);
+            }
         }
-    }
 
-    preview.clear();
-}
+        preview.clear();
+    }
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) return;
-        if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_AIR) return;
-        
-        // Check if player is holding a shulker box in main hand or off hand
-        ItemStack mainHand = player.getInventory().getItemInMainHand();
-        ItemStack offHand = player.getInventory().getItemInOffHand();
-        
-        ItemStack shulkerInHand = null;
-        if (mainHand != null && mainHand.getType() == SHULKER_BOX) {
-            shulkerInHand = mainHand;
-        } else if (offHand != null && offHand.getType() == SHULKER_BOX) {
-            shulkerInHand = offHand;
+        if (event.getAction() != Action.RIGHT_CLICK_AIR) return;
+
+        EquipmentSlot hand = event.getHand();
+        if (hand == null) return;
+
+        Player player = event.getPlayer();
+        PlayerInventory inventory = player.getInventory();
+
+        int slot;
+        if (hand == EquipmentSlot.HAND) {
+            slot = inventory.getHeldItemSlot();
+        } else {
+            // Main hand has priority over off hand
+            if (inventory.getItemInMainHand().getType() == SHULKER_BOX) return;
+            slot = 40;
         }
-        
-        if (shulkerInHand == null) return;
-        
-        // Get the player's inventory to find the slot number
-        Inventory playerInventory = player.getInventory();
-        int slotNumber = -1;
-        
-        // Check hotbar slots (0-8) - check mainhand first
-        if (shulkerInHand == mainHand) {
-            for (int i = 0; i < 9; i++) {
-                ItemStack slotItem = playerInventory.getItem(i);
-                if (slotItem != null && slotItem.isSimilar(shulkerInHand)) {
-                    slotNumber = i;
-                    break;
-                }
-            }
-        }
-        
-        // If not in hotbar, check offhand slot (40)
-        if (slotNumber == -1 && shulkerInHand == offHand) {
-            ItemStack offHandItem = playerInventory.getItem(40);
-            if (offHandItem != null && offHandItem.isSimilar(shulkerInHand)) {
-                slotNumber = 40;
-            }
-        }
-        
-        if (slotNumber == -1) {
-            plugin.getLogger().warning("[ShulkerBackpack] Could not find slot number for shulker box in inventory");
-            return;
-        }
-        
-        // Tag the shulker box in the actual inventory slot
-        ItemStack itemInSlot = playerInventory.getItem(slotNumber);
-        ItemMeta slotMeta = itemInSlot.getItemMeta();
-        if (slotMeta != null) {
-            org.bukkit.persistence.PersistentDataContainer container = slotMeta.getPersistentDataContainer();
-            container.set(SHULKER_TAG_KEY, PersistentDataType.BYTE, (byte) 1);
-            slotMeta.getPersistentDataContainer().set(SHULKER_TAG_KEY, PersistentDataType.BYTE, (byte) 1);
-            itemInSlot.setItemMeta(slotMeta);
-        }
-        
-        // Store the actual slot number
-        taggedSlots.put(player, slotNumber);
-        
-        // Get the shulker box item's meta
-        ItemMeta itemMeta = shulkerInHand.getItemMeta();
-        
-        // Open the shulker backpack preview
-        openShulkerBackpackPreview(player, shulkerInHand, slotNumber, itemMeta);
+
+        openShulkerBackpackPreview(player, slot);
     }
     
-    private void openShulkerBackpackPreview(Player player, ItemStack shulkerItem, int slotNumber, ItemMeta meta) {
-        // Get the display name from the shulker box item
-        String shulkerName = "Shulker Box";
-        Component title = null;
-        if (meta.hasDisplayName()) {
-            title = meta.displayName();
-        }
-        
-        // Try to get the shulker box contents from BlockStateMeta
-        try {
-            if (meta instanceof BlockStateMeta blockStateMeta) {
-                Object blockState = blockStateMeta.getBlockState();
-                if (blockState instanceof ShulkerBox shulkerBox) {
-                    Inventory shulkerInventory = shulkerBox.getInventory();
-                    
-                    // Create a preview inventory using the new API (Component title)
-                    Inventory preview = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, title != null ? title : Component.text(shulkerName));
-                    preview.setContents(shulkerInventory.getContents());
-                    
-                    // Open the preview inventory for the player
-                    player.openInventory(preview);
-                    
-                    // Store the preview inventory to access it later
-                    previewInventories.put(player, preview);
-                    
-                    // Debug output
-                    StringBuilder contents = new StringBuilder();
-                    for (int i = 0; i < shulkerInventory.getSize(); i++) {
-                        ItemStack item = shulkerInventory.getItem(i);
-                        if (item != null) {
-                            contents.append(i).append(": ").append(item.getType()).append(" (").append(item.getAmount()).append(")\n");
-                        } else {
-                            contents.append(i).append(": empty\n");
-                        }
-                    }
-                    
-                    String handName = "hotbar";
-                    if (slotNumber == 40) handName = "off hand";
-                    plugin.getLogger().info("[ShulkerBackpack] Tagged shulker for " + player.getName() + " - Name: " + (title != null ? title.toString() : shulkerName) + " - Slot: " + slotNumber + " (" + handName + ") - Contents:\n" + contents.toString());
-                }
-            }
-        } catch (Exception e) {
-            plugin.getLogger().warning("[ShulkerBackpack] Failed to read shulker box: " + e.getMessage());
-        }
+    private void openShulkerBackpackPreview(Player player, int slot) {
+        // One preview at a time
+        if (previewInventories.containsKey(player)) return;
+
+        ItemStack item = player.getInventory().getItem(slot);
+        if (item == null || item.getType() != SHULKER_BOX) return;
+        if (!(item.getItemMeta() instanceof BlockStateMeta bsm)) return;
+        if (!(bsm.getBlockState() instanceof ShulkerBox box)) return;
+
+        Component title = bsm.hasDisplayName() ? bsm.displayName() : Component.text("Shulker Box");
+
+        Inventory preview = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, title);
+        preview.setContents(box.getInventory().getContents());
+
+        // openInventory returns null if another plugin cancelled the open
+        if (player.openInventory(preview) == null) return;
+
+        // Register only once the preview is actually open
+        previewInventories.put(player, preview);
+        taggedSlots.put(player, slot);
+
+        plugin.getLogger().info("[ShulkerBackpack] Opened shulker for " + player.getName() + " from slot " + slot);
     }
 }
