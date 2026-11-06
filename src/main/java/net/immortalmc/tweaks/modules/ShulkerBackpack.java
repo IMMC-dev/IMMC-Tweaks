@@ -41,10 +41,13 @@ public class ShulkerBackpack implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!enabled) return;
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        if (player.getOpenInventory() == null) return;
-
+        
+        // Simple debug: log any click and which slot
+        Integer playerTaggedSlot = taggedSlots.get(player);
+        boolean isTagged = (playerTaggedSlot != null && playerTaggedSlot == event.getSlot());
+        plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " clicked slot " + event.getSlot() + " - Current item: " + (event.getCurrentItem() != null ? event.getCurrentItem().getType().name() : "null") + " - tagged: " + isTagged);
+        
         // Only handle right-click events (PICKUP_HALF)
         if (!event.getAction().toString().equals("PICKUP_HALF")) return;
 
