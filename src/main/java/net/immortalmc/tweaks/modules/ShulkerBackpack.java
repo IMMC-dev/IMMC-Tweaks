@@ -29,11 +29,12 @@ import java.util.Map;
 public class ShulkerBackpack implements Listener {
     private final immcTweaks plugin;
     private boolean enabled;
-
+    
     private static final Material SHULKER_BOX = Material.SHULKER_BOX;
     private final NamespacedKey SHULKER_TAG_KEY;
     private final Map<Player, Integer> taggedSlots = new HashMap<>(); // Track which slot was tagged
     private final Map<Player, org.bukkit.inventory.Inventory> previewInventories = new HashMap<>(); // Track preview inventories
+    private final Map<Player, Integer> taggedHand = new HashMap<>(); // Track which hand the outdoor shulker is in (-1 = main hand, -2 = off hand)
 
     public ShulkerBackpack(immcTweaks plugin) {
         this.plugin = plugin;
@@ -210,9 +211,8 @@ public class ShulkerBackpack implements Listener {
         if (!(event.getPlayer() instanceof Player player)) return;
         if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_AIR) return;
         
-        // Check if player is holding a shulker box in main hand
+        // Check if player is holding a shulker box in main hand or off hand
         ItemStack mainHand = player.getInventory().getItemInMainHand();
-        // Check if player is holding a shulker box in off hand
         ItemStack offHand = player.getInventory().getItemInOffHand();
         
         ItemStack shulkerInHand = null;
@@ -224,6 +224,47 @@ public class ShulkerBackpack implements Listener {
         
         if (shulkerInHand == null) return;
         
-        plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " right-clicked in air while holding shulker box in " + (shulkerInHand == mainHand ? "main hand" : "off hand"));
+        // Get the player's inventory to find the slot number
+        Inventory playerInventory = player.getInventory();
+        int slotNumber = -1;
+        
+        // Check hotbar slots (0-8) - check mainhand first
+        if (shulkerInHand == mainHand) {
+            for (int i = 0; i < 9; i++) {
+                ItemStack slotItem = playerInventory.getItem(i);
+                if (slotItem != null && slotItem.isSimilar(shulkerInHand)) {
+                    slotNumber = i;
+                    break;
+                }
+            }
+        }
+        
+        // If not in hotbar, check offhand slot (46)
+        if (slotNumber == -1 && shulkerInHand == offHand) {
+            ItemStack offHandItem = playerInventory.getItem(46);
+            if (offHandItem != null && offHandItem.isSimilar(shulkerInHand)) {
+                slotNumber = 46;
+            }
+        }
+        
+        if (slotNumber == -1) {
+            plugin.getLogger().warning("[ShulkerBackpack] Could not find slot number for shulker box in inventory");
+            return;
+        }
+        
+        // Tag the shulker box in the actual inventory slot
+        ItemStack itemInSlot = playerInventory.getItem(slotNumber);
+        ItemMeta slotMeta = itemInSlot.getItemMeta();
+        if (slotMeta != null) {
+            org.bukkit.persistence.PersistentDataContainer container = slotMeta.getPersistentDataContainer();
+            container.set(SHULKER_TAG_KEY, PersistentDataType.BYTE, (byte) 1);
+            slotMeta.getPersistentDataContainer().set(SHULKER_TAG_KEY, PersistentDataType.BYTE, (byte) 1);
+            itemInSlot.setItemMeta(slotMeta);
+        }
+        
+        // Store the actual slot number
+        taggedSlots.put(player, slotNumber);
+        
+        plugin.getLogger().info("[ShulkerBackpack] Tagged shulker for " + player.getName() + " - Slot: " + slotNumber + " (" + (slotNumber == 46 ? "off hand" : "hotbar") + ")");
     }
 }
