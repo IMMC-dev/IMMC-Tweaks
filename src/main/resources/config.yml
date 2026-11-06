@@ -1,5 +1,4 @@
 # IMMC Tweaks configuration
-
 no-anvil-limit:
   # Remove the too expensive anvil limit by capping the max level cost at 39 levels
   enabled: true

@@ -6,6 +6,7 @@ import net.immortalmc.tweaks.modules.CreeperConfetti;
 import net.immortalmc.tweaks.modules.NoCropTrample;
 import net.immortalmc.tweaks.modules.ItemNameColour;
 import net.immortalmc.tweaks.modules.SignTextColour;
+import net.immortalmc.tweaks.modules.TestInvCommand;
 import net.immortalmc.tweaks.modules.ShulkerBackpack;
 import net.immortalmc.tweaks.utils.SendChatMsg;
 
@@ -45,6 +46,7 @@ public class immcTweaks extends JavaPlugin {
         registerModule("better-bonemeal", "BetterBonemeal", () -> new BetterBonemeal(this));
         registerModule("item-name-colour", "ItemNameColour", () -> new ItemNameColour(this), "itemnamecolour");
         registerModule("shulker-backpack", "ShulkerBackpack", () -> new ShulkerBackpack(this));
+        registerModule("test-inv-command", "TestInvCommand", TestInvCommand::new, "testinv");
 
         logActiveCommands();
         getLogger().info("IMMC Tweaks enabled!");
