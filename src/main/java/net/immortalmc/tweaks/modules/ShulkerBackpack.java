@@ -174,6 +174,10 @@ public class ShulkerBackpack implements Listener {
                             blockStateMeta.setBlockState(shulkerBox);
                             shulkerItem.setItemMeta(blockStateMeta);
                             
+                            // Remove and re-add the shulker item to refresh the tooltip
+                            player.getInventory().setItem(taggedSlot, null);
+                            player.getInventory().setItem(taggedSlot, shulkerItem);
+                            
                             plugin.getLogger().info("[ShulkerBackpack] Saved preview contents to shulker box at slot " + taggedSlot + " for " + player.getName());
                         }
                     }
