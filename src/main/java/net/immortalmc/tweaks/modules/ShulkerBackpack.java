@@ -239,11 +239,11 @@ public class ShulkerBackpack implements Listener {
             }
         }
         
-        // If not in hotbar, check offhand slot (46)
+        // If not in hotbar, check offhand slot (40)
         if (slotNumber == -1 && shulkerInHand == offHand) {
-            ItemStack offHandItem = playerInventory.getItem(46);
+            ItemStack offHandItem = playerInventory.getItem(40);
             if (offHandItem != null && offHandItem.isSimilar(shulkerInHand)) {
-                slotNumber = 46;
+                slotNumber = 40;
             }
         }
         
