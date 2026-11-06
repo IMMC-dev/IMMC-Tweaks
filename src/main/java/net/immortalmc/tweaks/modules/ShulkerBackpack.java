@@ -48,6 +48,11 @@ public class ShulkerBackpack implements Listener {
         boolean isTagged = (playerTaggedSlot != null && playerTaggedSlot == event.getSlot());
         plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " clicked slot " + event.getSlot() + " - Current item: " + (event.getCurrentItem() != null ? event.getCurrentItem().getType().name() : "null") + " - tagged: " + isTagged);
         
+        // Cancel the click if it's the tagged slot
+        if (isTagged) {
+            event.setCancelled(true);
+        }
+        
         // Only handle right-click events (PICKUP_HALF)
         if (!event.getAction().toString().equals("PICKUP_HALF")) return;
 
