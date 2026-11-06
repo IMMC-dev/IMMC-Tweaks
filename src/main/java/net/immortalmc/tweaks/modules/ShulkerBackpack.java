@@ -117,10 +117,6 @@ public class ShulkerBackpack implements Listener {
                     && item.getItemMeta() instanceof BlockStateMeta bsm
                     && bsm.getBlockState() instanceof ShulkerBox box) {
 
-                // Save the preview contents back into the shulker
-                box.getInventory().setContents(preview.getContents());
-                bsm.setBlockState(box);
-
                 // Remove the tag if the interact path added one
                 bsm.getPersistentDataContainer().remove(SHULKER_TAG_KEY);
 
