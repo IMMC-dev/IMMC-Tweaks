@@ -97,64 +97,6 @@ public class ShulkerBackpack implements Listener {
         Bukkit.getScheduler().runTask(plugin, () -> openPreview(player, targetSlot));
     }
 
-    // Handles clicks on the preview inventory.
-    // Syncs changes back to the shulker box immediately when interacting with either inventory.
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onInventoryClickPreview(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-
-        Inventory preview = openPreviews.get(player);
-        if (preview == null) return;
-
-        // Sync whenever interacting with preview or player inventory while preview is open
-        if (event.getInventory() == preview || event.getInventory() == player.getInventory()) {
-            Bukkit.getScheduler().runTask(plugin, () -> syncPreviewToShulker(player));
-        }
-    }
-
-    // Handles drag operations on the preview inventory.
-    // Syncs changes back to the shulker box immediately when dragging items.
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-
-        Inventory preview = openPreviews.get(player);
-        if (preview == null) return;
-
-        // Sync when dragging items in preview or player inventory
-        if (event.getInventory() == preview || event.getInventory() == player.getInventory()) {
-            Bukkit.getScheduler().runTask(plugin, () -> syncPreviewToShulker(player));
-        }
-    }
-
-    // Handles closing the shulker backpack preview.
-    // Cleans up the maps and clears the preview inventory.
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) return;
-
-        Inventory preview = openPreviews.get(player);
-        if (preview == null || event.getInventory() != preview) return;
-
-        openPreviews.remove(player);
-        Integer slot = activeShulkerSlots.remove(player);
-
-        if (slot != null) {
-            ItemStack item = player.getInventory().getItem(slot);
-            if (item != null
-                    && item.getType() == SHULKER_BOX
-                    && item.getItemMeta() instanceof BlockStateMeta bsm
-                    && bsm.getBlockState() instanceof ShulkerBox) {
-
-                // Remove the tag if the interact path added one
-                bsm.getPersistentDataContainer().remove(SHULKER_TAG_KEY);
-                item.setItemMeta(bsm);
-            }
-        }
-
-        preview.clear();
-    }
-    
     // Handles right-clicking in the air.
     // Opens the shulker backpack preview if the player right-clicks while holding a shulker box.
     // Prefers the main hand, but also checks the off-hand if the main hand doesn't have a shulker box.
@@ -206,6 +148,36 @@ public class ShulkerBackpack implements Listener {
         plugin.getLogger().info("[ShulkerBackpack] Opened shulker for " + player.getName() + " from slot " + slot);
     }
 
+    // Handles clicks on the preview inventory.
+    // Syncs changes back to the shulker box immediately when interacting with either inventory.
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onInventoryClickPreview(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        Inventory preview = openPreviews.get(player);
+        if (preview == null) return;
+
+        // Sync whenever interacting with preview or player inventory while preview is open
+        if (event.getInventory() == preview || event.getInventory() == player.getInventory()) {
+            Bukkit.getScheduler().runTask(plugin, () -> syncPreviewToShulker(player));
+        }
+    }
+
+    // Handles drag operations on the preview inventory.
+    // Syncs changes back to the shulker box immediately when dragging items.
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        Inventory preview = openPreviews.get(player);
+        if (preview == null) return;
+
+        // Sync when dragging items in preview or player inventory
+        if (event.getInventory() == preview || event.getInventory() == player.getInventory()) {
+            Bukkit.getScheduler().runTask(plugin, () -> syncPreviewToShulker(player));
+        }
+    }
+
     // Syncs the preview inventory contents back to the shulker box.
     // Only syncs if the preview is still open and the shulker box is still valid.
     private void syncPreviewToShulker(Player player) {
@@ -231,5 +203,33 @@ public class ShulkerBackpack implements Listener {
         bsm.getPersistentDataContainer().remove(SHULKER_TAG_KEY);
 
         item.setItemMeta(bsm);
+    }
+
+    // Handles closing the shulker backpack preview.
+    // Cleans up the maps and clears the preview inventory.
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) return;
+
+        Inventory preview = openPreviews.get(player);
+        if (preview == null || event.getInventory() != preview) return;
+
+        openPreviews.remove(player);
+        Integer slot = activeShulkerSlots.remove(player);
+
+        if (slot != null) {
+            ItemStack item = player.getInventory().getItem(slot);
+            if (item != null
+                    && item.getType() == SHULKER_BOX
+                    && item.getItemMeta() instanceof BlockStateMeta bsm
+                    && bsm.getBlockState() instanceof ShulkerBox) {
+
+                // Remove the tag if the interact path added one
+                bsm.getPersistentDataContainer().remove(SHULKER_TAG_KEY);
+                item.setItemMeta(bsm);
+            }
+        }
+
+        preview.clear();
     }
 }
