@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -89,10 +90,25 @@ public class ShulkerBackpack implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
         Inventory preview = openPreviews.get(player);
-        if (preview == null || event.getInventory() != preview) return;
+        if (preview == null) return;
 
-        // Sync preview changes back to the shulker immediately
-        Bukkit.getScheduler().runTask(plugin, () -> syncPreviewToShulker(player));
+        // Sync whenever interacting with preview or player inventory while preview is open
+        if (event.getInventory() == preview || event.getInventory() == player.getInventory()) {
+            Bukkit.getScheduler().runTask(plugin, () -> syncPreviewToShulker(player));
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        Inventory preview = openPreviews.get(player);
+        if (preview == null) return;
+
+        // Sync when dragging items in preview or player inventory
+        if (event.getInventory() == preview || event.getInventory() == player.getInventory()) {
+            Bukkit.getScheduler().runTask(plugin, () -> syncPreviewToShulker(player));
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
