@@ -209,6 +209,21 @@ public class ShulkerBackpack implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (!(event.getPlayer() instanceof Player player)) return;
         if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_AIR && event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
-        plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " right-clicked in " + event.getAction().name());
+        
+        // Check if player is holding a shulker box in main hand
+        ItemStack mainHand = player.getInventory().getItemInMainHand();
+        // Check if player is holding a shulker box in off hand
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+        
+        ItemStack shulkerInHand = null;
+        if (mainHand != null && mainHand.getType() == SHULKER_BOX) {
+            shulkerInHand = mainHand;
+        } else if (offHand != null && offHand.getType() == SHULKER_BOX) {
+            shulkerInHand = offHand;
+        }
+        
+        if (shulkerInHand == null) return;
+        
+        plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " right-clicked in " + event.getAction().name() + " while holding shulker box in " + (shulkerInHand == mainHand ? "main hand" : "off hand"));
     }
 }
