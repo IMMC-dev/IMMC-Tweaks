@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -202,5 +203,12 @@ public class ShulkerBackpack implements Listener {
         
         // Check if player has any remaining tagged slots
         plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " has " + taggedSlots.size() + " tagged slot(s) remaining: " + taggedSlots.values());
+    }
+    
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) return;
+        if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_AIR && event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
+        plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " right-clicked in " + event.getAction().name());
     }
 }
