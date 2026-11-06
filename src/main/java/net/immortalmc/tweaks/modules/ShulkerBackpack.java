@@ -157,6 +157,31 @@ public class ShulkerBackpack implements Listener {
                     plugin.getLogger().info("  Slot " + i + ": empty");
                 }
             }
+            
+            // Get the original shulker box item
+            ItemStack shulkerItem = player.getInventory().getItem(taggedSlot);
+            if (shulkerItem != null && shulkerItem.getType() == Material.SHULKER_BOX) {
+                try {
+                    // Get the shulker box contents from the original item's NBT
+                    ItemMeta shulkerMeta = shulkerItem.getItemMeta();
+                    if (shulkerMeta instanceof BlockStateMeta blockStateMeta) {
+                        Object blockState = blockStateMeta.getBlockState();
+                        if (blockState instanceof ShulkerBox shulkerBox) {
+                            // Set the inventory contents from the preview to the shulker box
+                            shulkerBox.getInventory().setContents(preview.getContents());
+                            
+                            // Update the block state meta
+                            blockStateMeta.setBlockState(shulkerBox);
+                            shulkerItem.setItemMeta(blockStateMeta);
+                            
+                            plugin.getLogger().info("[ShulkerBackpack] Saved preview contents to shulker box at slot " + taggedSlot + " for " + player.getName());
+                        }
+                    }
+                } catch (Exception e) {
+                    plugin.getLogger().warning("[ShulkerBackpack] Failed to save preview contents: " + e.getMessage());
+                }
+            }
+            
             // Clear the preview inventory so items aren't lost
             preview.clear();
         }
