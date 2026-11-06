@@ -10,6 +10,3 @@ commands:
     description: Shows the colour codes of the item you're holding.
     usage: /itemnamecolour
     aliases: [inc]
-  testinv:
-    description: Opens a plain test inventory
-    usage: /testinv

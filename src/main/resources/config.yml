@@ -1,4 +1,5 @@
 # IMMC Tweaks configuration
+
 no-anvil-limit:
   # Remove the too expensive anvil limit by capping the max level cost at 39 levels
   enabled: true
@@ -44,9 +45,9 @@ creeper-confetti:
     - "#000000"   # black
 
   # Each entry is one burst that goes off when a creeper explodes
-  # Valid Types: BALL, BALL_LARGE, STAR, BURST or CREEPER
-  # Flicker: whether to use the sparkle effect
-  # Trail: whether to use the firework trail effect
+  #   - Valid Types: BALL, BALL_LARGE, STAR, BURST or CREEPER
+  #   - Flicker: whether to use the sparkle effect
+  #   - Trail: whether to use the firework trail effect
   effects:
     - type: BALL
       flicker: true
@@ -72,5 +73,7 @@ sign-text-colour:
 
 
 shulker-backpack:
-  # Allow players to open shulker boxes in their inventory without placing them
+  # Allow players to open shulker boxes without placing them. This can be done by:
+  #   - right-clicking (split stack keybind) the shulker box in the inventory
+  #   - right-clicking (place block keybind) the air while holding the shulker box
   enabled: true
