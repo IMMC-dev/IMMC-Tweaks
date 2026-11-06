@@ -77,13 +77,13 @@ public class ShulkerBackpack implements Listener {
                 Object blockState = blockStateMeta.getBlockState();
                 if (blockState instanceof ShulkerBox shulkerBox) {
                     Inventory shulkerInventory = shulkerBox.getInventory();
-
+                    
                     // Cancel the event to prevent picking up the shulker box
                     event.setCancelled(true);
-
+                    
                     // Clear the cursor to prevent phantom items
                     event.setCursor(null);
-
+                    
                     // Tag the shulker box to prevent it from being moved or dropped
                     // Create a copy to avoid modifying the original item in inventory
                     ItemStack taggedShulker = clickedItem.clone();
@@ -92,40 +92,13 @@ public class ShulkerBackpack implements Listener {
                         org.bukkit.persistence.PersistentDataContainer container = taggedMeta.getPersistentDataContainer();
                         container.set(SHULKER_TAG_KEY, PersistentDataType.BYTE, (byte) 1);
                         taggedShulker.setItemMeta(taggedMeta);
-                    };
-
+                    }
+                    
                     // Store the slot number where the shulker was tagged
                     taggedSlots.put(player, event.getSlot());
-
-                    // Get the display name from the shulker box item
-                    String shulkerName = "Shulker Box";
-                    Component title = null;
-                    if (meta.hasDisplayName()) {
-                        title = meta.displayName();
-                    }
-
-                    // Create a preview inventory using the new API (Component title)
-                    Inventory preview = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, title != null ? title : Component.text(shulkerName));
-                    preview.setContents(shulkerInventory.getContents());
-
-                    // Open the preview inventory for the player
-                    player.openInventory(preview);
                     
-                    // Store the preview inventory to access it later
-                    previewInventories.put(player, preview);
-
-                    // Debug output
-                    StringBuilder contents = new StringBuilder();
-                    for (int i = 0; i < shulkerInventory.getSize(); i++) {
-                        ItemStack item = shulkerInventory.getItem(i);
-                        if (item != null) {
-                            contents.append(i).append(": ").append(item.getType()).append(" (").append(item.getAmount()).append(")\n");
-                        } else {
-                            contents.append(i).append(": empty\n");
-                        }
-                    }
-                    
-                    plugin.getLogger().info("[ShulkerBackpack] Tagged shulker for " + player.getName() + " - Name: " + (title != null ? title.toString() : shulkerName) + " - Slot: " + event.getSlot() + " - Contents:\n" + contents.toString());
+                    // Open the shulker backpack preview
+                    openShulkerBackpackPreview(player, clickedItem, event.getSlot(), meta);
                 }
             }
         } catch (Exception e) {
@@ -265,6 +238,56 @@ public class ShulkerBackpack implements Listener {
         // Store the actual slot number
         taggedSlots.put(player, slotNumber);
         
-        plugin.getLogger().info("[ShulkerBackpack] Tagged shulker for " + player.getName() + " - Slot: " + slotNumber + " (" + (slotNumber == 46 ? "off hand" : "hotbar") + ")");
+        // Get the shulker box item's meta
+        ItemMeta itemMeta = shulkerInHand.getItemMeta();
+        
+        // Open the shulker backpack preview
+        openShulkerBackpackPreview(player, shulkerInHand, slotNumber, itemMeta);
+    }
+    
+    private void openShulkerBackpackPreview(Player player, ItemStack shulkerItem, int slotNumber, ItemMeta meta) {
+        // Get the display name from the shulker box item
+        String shulkerName = "Shulker Box";
+        Component title = null;
+        if (meta.hasDisplayName()) {
+            title = meta.displayName();
+        }
+        
+        // Try to get the shulker box contents from BlockStateMeta
+        try {
+            if (meta instanceof BlockStateMeta blockStateMeta) {
+                Object blockState = blockStateMeta.getBlockState();
+                if (blockState instanceof ShulkerBox shulkerBox) {
+                    Inventory shulkerInventory = shulkerBox.getInventory();
+                    
+                    // Create a preview inventory using the new API (Component title)
+                    Inventory preview = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, title != null ? title : Component.text(shulkerName));
+                    preview.setContents(shulkerInventory.getContents());
+                    
+                    // Open the preview inventory for the player
+                    player.openInventory(preview);
+                    
+                    // Store the preview inventory to access it later
+                    previewInventories.put(player, preview);
+                    
+                    // Debug output
+                    StringBuilder contents = new StringBuilder();
+                    for (int i = 0; i < shulkerInventory.getSize(); i++) {
+                        ItemStack item = shulkerInventory.getItem(i);
+                        if (item != null) {
+                            contents.append(i).append(": ").append(item.getType()).append(" (").append(item.getAmount()).append(")\n");
+                        } else {
+                            contents.append(i).append(": empty\n");
+                        }
+                    }
+                    
+                    String handName = "hotbar";
+                    if (slotNumber == 46) handName = "off hand";
+                    plugin.getLogger().info("[ShulkerBackpack] Tagged shulker for " + player.getName() + " - Name: " + (title != null ? title.toString() : shulkerName) + " - Slot: " + slotNumber + " (" + handName + ") - Contents:\n" + contents.toString());
+                }
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("[ShulkerBackpack] Failed to read shulker box: " + e.getMessage());
+        }
     }
 }
