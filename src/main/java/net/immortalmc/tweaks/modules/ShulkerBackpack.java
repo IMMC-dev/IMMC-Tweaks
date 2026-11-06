@@ -56,7 +56,14 @@ public class ShulkerBackpack implements Listener {
         
         // Only handle right-click events (PICKUP_HALF)
         if (!event.getAction().toString().equals("PICKUP_HALF")) return;
-
+        
+        // Check if the clicked slot is in the player's inventory (not crafting, workbench, etc.)
+        Inventory clickedInventory = event.getClickedInventory();
+        if (clickedInventory == null || clickedInventory.getType() != InventoryType.PLAYER) {
+            plugin.getLogger().info("[ShulkerBackpack] Skipping click - clicked inventory is not player inventory: " + (clickedInventory == null ? "null" : clickedInventory.getType().name()));
+            return;
+        }
+        
         // Check if the item being clicked (in the slot) is a shulker box
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null || clickedItem.getType() != SHULKER_BOX) return;
