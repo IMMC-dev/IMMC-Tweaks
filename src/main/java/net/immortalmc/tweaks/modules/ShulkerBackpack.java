@@ -119,8 +119,21 @@ public class ShulkerBackpack implements Listener {
         Integer taggedSlot = taggedSlots.remove(player);
         if (taggedSlot != null) {
             plugin.getLogger().info("[ShulkerBackpack] Inventory close event fired for player: " + player.getName() + ", taggedSlot: " + taggedSlot);
+
+            // Remove the tag
+            ItemStack item = player.getInventory().getItem(taggedSlot);
+            if (item != null) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta != null && meta.getPersistentDataContainer().has(SHULKER_TAG_KEY, PersistentDataType.BYTE)) {
+                    meta.getPersistentDataContainer().remove(SHULKER_TAG_KEY);
+                    item.setItemMeta(meta);
+                }
+            }
         } else {
             plugin.getLogger().info("[ShulkerBackpack] Inventory close event fired for player: " + player.getName() + ", but no tagged slot found");
         }
+        
+        // Check if player has any remaining tagged slots
+        plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " has " + taggedSlots.size() + " tagged slot(s) remaining: " + taggedSlots.values());
     }
 }
