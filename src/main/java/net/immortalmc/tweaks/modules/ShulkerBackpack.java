@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -30,7 +31,7 @@ public class ShulkerBackpack implements Listener {
 
     private static final Material SHULKER_BOX = Material.SHULKER_BOX;
     private final NamespacedKey SHULKER_TAG_KEY;
-    private final Map<Player, ItemStack> taggedShulkers = new HashMap<>();
+    private final Map<Player, Integer> taggedSlots = new HashMap<>(); // Track which slot was tagged
 
     public ShulkerBackpack(immcTweaks plugin) {
         this.plugin = plugin;
@@ -89,8 +90,8 @@ public class ShulkerBackpack implements Listener {
                         taggedShulker.setItemMeta(taggedMeta);
                     }
 
-                    // Store reference to the tagged shulker for later removal
-                    taggedShulkers.put(player, taggedShulker);
+                    // Store the slot number where the shulker was tagged
+                    taggedSlots.put(player, event.getSlot());
 
                     // Debug output
                     StringBuilder contents = new StringBuilder();
@@ -108,6 +109,18 @@ public class ShulkerBackpack implements Listener {
             }
         } catch (Exception e) {
             plugin.getLogger().warning("[ShulkerBackpack] Failed to read shulker box: " + e.getMessage());
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) return;
+        
+        Integer taggedSlot = taggedSlots.remove(player);
+        if (taggedSlot != null) {
+            plugin.getLogger().info("[ShulkerBackpack] Inventory close event fired for player: " + player.getName() + ", taggedSlot: " + taggedSlot);
+        } else {
+            plugin.getLogger().info("[ShulkerBackpack] Inventory close event fired for player: " + player.getName() + ", but no tagged slot found");
         }
     }
 }
