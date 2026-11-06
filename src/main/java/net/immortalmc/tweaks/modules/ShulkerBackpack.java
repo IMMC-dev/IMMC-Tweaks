@@ -85,6 +85,19 @@ public class ShulkerBackpack implements Listener {
         final int slot = event.getSlot();
         Bukkit.getScheduler().runTask(plugin, () -> openShulkerBackpackPreview(player, slot));
     }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onInventoryClickPreview(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        // Only handle clicks on the preview inventory
+        Inventory preview = previewInventories.get(player);
+        if (preview == null) return;
+        if (event.getInventory() != preview) return;
+
+        // Sync preview changes back to the shulker immediately
+        Bukkit.getScheduler().runTask(plugin, () -> syncPreviewToShulker(player));
+    }
     
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClose(InventoryCloseEvent event) {
@@ -162,5 +175,30 @@ public class ShulkerBackpack implements Listener {
         taggedSlots.put(player, slot);
 
         plugin.getLogger().info("[ShulkerBackpack] Opened shulker for " + player.getName() + " from slot " + slot);
+    }
+
+    private void syncPreviewToShulker(Player player) {
+        // Only sync if the preview is still open and tagged
+        if (!previewInventories.containsKey(player) || !taggedSlots.containsKey(player)) return;
+
+        Inventory preview = previewInventories.get(player);
+        if (preview == null) return;
+
+        Integer slot = taggedSlots.get(player);
+        if (slot == null) return;
+
+        ItemStack item = player.getInventory().getItem(slot);
+        if (item == null || item.getType() != SHULKER_BOX) return;
+        if (!(item.getItemMeta() instanceof BlockStateMeta bsm)) return;
+        if (!(bsm.getBlockState() instanceof ShulkerBox box)) return;
+
+        // Copy preview contents back to shulker
+        box.getInventory().setContents(preview.getContents());
+        bsm.setBlockState(box);
+
+        // Remove the tag if the interact path added one
+        bsm.getPersistentDataContainer().remove(SHULKER_TAG_KEY);
+
+        item.setItemMeta(bsm);
     }
 }
