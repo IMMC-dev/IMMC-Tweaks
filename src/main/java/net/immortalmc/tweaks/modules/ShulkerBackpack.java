@@ -32,6 +32,7 @@ public class ShulkerBackpack implements Listener {
     private static final Material SHULKER_BOX = Material.SHULKER_BOX;
     private final NamespacedKey SHULKER_TAG_KEY;
     private final Map<Player, Integer> taggedSlots = new HashMap<>(); // Track which slot was tagged
+    private final Map<Player, org.bukkit.inventory.Inventory> previewInventories = new HashMap<>(); // Track preview inventories
 
     public ShulkerBackpack(immcTweaks plugin) {
         this.plugin = plugin;
@@ -87,6 +88,9 @@ public class ShulkerBackpack implements Listener {
 
                     // Open the preview inventory for the player
                     player.openInventory(preview);
+                    
+                    // Store the preview inventory to access it later
+                    previewInventories.put(player, preview);
 
                     // Tag the shulker box to prevent it from being moved or dropped
                     // Create a copy to avoid modifying the original item in inventory
@@ -127,7 +131,7 @@ public class ShulkerBackpack implements Listener {
         Integer taggedSlot = taggedSlots.remove(player);
         if (taggedSlot != null) {
             plugin.getLogger().info("[ShulkerBackpack] Inventory close event fired for player: " + player.getName() + ", taggedSlot: " + taggedSlot);
-
+            
             // Remove the tag
             ItemStack item = player.getInventory().getItem(taggedSlot);
             if (item != null) {
@@ -140,6 +144,25 @@ public class ShulkerBackpack implements Listener {
         } else {
             plugin.getLogger().info("[ShulkerBackpack] Inventory close event fired for player: " + player.getName() + ", but no tagged slot found");
         }
+        
+        // Get the preview inventory contents before clearing it
+        org.bukkit.inventory.Inventory preview = previewInventories.get(player);
+        if (preview != null) {
+            plugin.getLogger().info("[ShulkerBackpack] Preview contents for " + player.getName() + ":");
+            for (int i = 0; i < preview.getSize(); i++) {
+                ItemStack item = preview.getItem(i);
+                if (item != null) {
+                    plugin.getLogger().info("  Slot " + i + ": " + item.getType().name() + " x" + item.getAmount());
+                } else {
+                    plugin.getLogger().info("  Slot " + i + ": empty");
+                }
+            }
+            // Clear the preview inventory so items aren't lost
+            preview.clear();
+        }
+        
+        // Remove the preview inventory from tracking
+        previewInventories.remove(player);
         
         // Check if player has any remaining tagged slots
         plugin.getLogger().info("[ShulkerBackpack] Player " + player.getName() + " has " + taggedSlots.size() + " tagged slot(s) remaining: " + taggedSlots.values());
